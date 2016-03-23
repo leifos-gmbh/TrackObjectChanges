@@ -299,5 +299,14 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 			'params'	=> $params
 		);
 	}
+
+	public function afterUninstall()
+	{
+		global $ilDB;
+		if($ilDB->tableExists("evnt_evhk_tobc_events"))
+		{
+			$ilDB->dropTable("evnt_evhk_tobc_events");
+		}
+	}
 }
 
