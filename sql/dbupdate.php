@@ -40,6 +40,4 @@ $ilDB->addPrimaryKey('evnt_evhk_tobc_events', array('evt_id'));
 
 $ilDB->createSequence('evnt_evhk_tobc_events');
 
-// @todo: create required indexes
-
 ?>

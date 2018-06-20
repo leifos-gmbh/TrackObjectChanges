@@ -4,31 +4,58 @@
  * Class to manage one object change event
  *
  * @author		Björn Heyser <bheyser@databay.de>
- * @version		$Id: class.tobcObjectChangeEvent.php 38620 2012-12-03 15:01:19Z smeyer $
+ * @author  Stefan Meyer <smeyer.ilias@gmx.de>
  *
- * @package		<PLUGINS>/Services/EventHandling/EventHook/TrackObjectChanges
  */
 class tobcObjectChangeEvent
 {
-	private static $trackedObjectTypes = array('cat', 'htlm', 'file');
-	private static $allowedContainerTypes = array('cat');
+	/**
+	 * @var string[]
+	 */
+	private static $trackedObjectTypes = array('cat', 'grp', 'fold', 'htlm', 'file','sahs','webr');
+
+
+	/**
+	 * @var string[]
+	 */
+	private static $allowedContainerTypes = array('cat','grp','fold');
 	
 	const EVENT_TYPE_CREATE  = 'CREATE';
 	const EVENT_TYPE_UPDATE  = 'UPDATE';
 	const EVENT_TYPE_REMOVE  = 'REMOVE';
 	const EVENT_TYPE_TOTRASH = 'TOTRASH';
 	const EVENT_TYPE_RESTORE = 'RESTORE';
-	
+
+	/**
+	 * @var int
+	 */
 	private $id = null;
-	
+
+	/**
+	 * @var int
+	 */
 	private $objId = null;
-	
+
+	/**
+	 * @var string
+	 */
 	private $objType = null;
-	
+
+	/**
+	 * @var string
+	 */
 	private $eventType = null;
-	
+
+	/**
+	 * @var string
+	 */
 	private $eventDate = null;
-	
+
+	/**
+	 * tobcObjectChangeEvent constructor.
+	 * @param null $id
+	 * @throws ilException
+	 */
 	public function __construct($id = null)
 	{
 		if( !is_null($id) )
@@ -38,14 +65,21 @@ class tobcObjectChangeEvent
 		}
 	}
 
+	/**
+	 * Read entry
+	 * @return bool
+	 * @throws ilException
+	 */
 	public function read()
 	{
+		global $DIC;
+
+		$ilDB = $DIC->database();
+
 		if( !$this->getId() )
 		{
 			throw new ilException('Cannot read object change event without valid id!');
 		}
-		
-		global $ilDB;
 		
 		$query = "
 			SELECT		evt_id			id,
@@ -78,7 +112,12 @@ class tobcObjectChangeEvent
 			'Could not find dataset with evt_id '.$this->getId().' in database table evnt_evhk_tobc_events'
 		);
 	}
-	
+
+	/**
+	 * Assign datset
+	 * @param array $dataSet
+	 * @return tobcObjectChangeEvent
+	 */
 	public function assign($dataSet)
 	{
 		$this->setId($dataSet['id']);
@@ -91,7 +130,10 @@ class tobcObjectChangeEvent
 		
 		return $this;
 	}
-	
+
+	/**
+	 * Save entry
+	 */
 	public function save()
 	{
 		if( $this->getId() )
@@ -105,10 +147,15 @@ class tobcObjectChangeEvent
 		
 		return $success;
 	}
-	
+
+	/**
+	 * Create new entry
+	 */
 	private function insert()
 	{
-		global $ilDB;
+		global $DIC;
+
+		$ilDB = $DIC->database();
 		
 		$nextId = $ilDB->nextId('evnt_evhk_tobc_events');
 		
@@ -120,10 +167,15 @@ class tobcObjectChangeEvent
 			'evt_event_date'	=> array('timestamp', $this->getEventDate())
 		));
 	}
-	
+
+	/**
+	 * Update entry
+	 */
 	private function update()
 	{
-		global $ilDB;
+		global $DIC;
+
+		$ilDB = $DIC->database();
 		
 		$ilDB->update(
 			'evnt_evhk_tobc_events',
@@ -138,15 +190,22 @@ class tobcObjectChangeEvent
 			)
 		);
 	}
-	
+
+	/**
+	 * Delete entry
+	 * @return bool
+	 * @throws ilException
+	 */
 	public function delete()
 	{
+		global $DIC;
+
+		$ilDB = $DIC->database();
+
 		if( !$this->getId() )
 		{
 			throw new ilException('Cannot delete object change event without valid id!');
 		}
-		
-		global $ilDB;
 		
 		$query = "
 			DELETE FROM		evnt_evhk_tobc_events
@@ -158,91 +217,122 @@ class tobcObjectChangeEvent
 			$query, array('integer'), array($this->getId())
 		);
 		
-		if( $affectedRows < 1 )
-		{
-			/*
-			throw new ilException(
-				'Could not delete dataset with evt_id '.$this->getId().' '.
-				'in database table evnt_evhk_tobc_events'
-			);
-			*/
-		}
-		elseif( $affectedRows > 1 )
+		if( $affectedRows > 1 )
 		{
 			throw new ilException(
 				'More than one dataset were deleted for evt_id '.$this->getId().' '.
 				'in database table evnt_evhk_tobc_events'
 			);
 		}
-		
 		return true;
 	}
-	
+
 	public function getId()
 	{
 		return $this->id;
 	}
 
+	/**
+	 * @param int $id
+	 * @return $this
+	 */
 	public function setId($id)
 	{
 		$this->id = (int)$id;
 		return $this;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function getObjId()
 	{
 		return $this->objId;
 	}
 
+	/**
+	 * @param int $objId
+	 * @return $this
+	 */
 	public function setObjId($objId)
 	{
 		$this->objId = (int)$objId;
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getObjType()
 	{
 		return $this->objType;
 	}
 
+	/**
+	 * @param string $objType
+	 * @return $this
+	 */
 	public function setObjType($objType)
 	{
 		$this->objType = $objType;
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getEventType()
 	{
 		return $this->eventType;
 	}
 
+	/**
+	 * @param string $eventType
+	 * @return $this
+	 */
 	public function setEventType($eventType)
 	{
 		$this->eventType = $eventType;
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getEventDate()
 	{
 		return $this->eventDate;
 	}
 
+	/**
+	 * @param string $eventDate
+	 * @return $this
+	 */
 	public function setEventDate($eventDate)
 	{
 		$this->eventDate = $eventDate;
 		return $this;
 	}
-	
+
+	/**
+	 * @return string[]
+	 */
 	public static function getTrackedObjectTypes()
 	{
 		return self::$trackedObjectTypes;
 	}
-	
+
+	/**
+	 * @return string[]
+	 */
 	public static function getAllowedContainerTypes()
 	{
 		return self::$allowedContainerTypes;
 	}
-	
+
+	/**
+	 * @return string[]
+	 */
 	public static function getValidEventTypes()
 	{
 		$validEventTypes = array(

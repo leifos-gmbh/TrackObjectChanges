@@ -5,28 +5,47 @@ include_once("./Services/EventHandling/classes/class.ilEventHookPlugin.php");
 /**
  * Class for plugin TrackObjectChanges docking to plugin slot Services/EventHandling/EventHook
  *
- * @author		Björn Heyser <bheyser@databay.de>
- * @version		$Id: class.ilTrackObjectChangesPlugin.php 35301 2012-06-29 14:14:34Z smeyer $
+ * @author	Björn Heyser <bheyser@databay.de>
+ * @author  Stefan Meyer <smeyer.ilias@gmx.de>
  *
- * @package		<PLUGINS>/Services/EventHandling/EventHook/TrackObjectChanges
  */
 class ilTrackObjectChangesPlugin extends ilEventHookPlugin
-{	
+{
+	/**
+	 * @var ilLogger
+	 */
+	private $logger = null;
+
+
+	/**
+	 * @inheritdoc
+	 */
 	final public function getPluginName()
 	{
 		return "TrackObjectChanges";
 	}
-	
+
+	/**
+	 * @inheritdoc
+	 */
 	protected function init()
 	{
+		global $DIC;
+
+		$this->logger = $DIC->logger()->trobj();
 		$this->includeClass('class.tobcObjectChangeEvent.php');
 	}
 
+	/**
+	 *
+	 * @param string $a_component
+	 * @param string $a_event
+	 * @param array $a_params
+	 * @return bool
+	 */
 	public function handleEvent($a_component, $a_event, $a_params)
 	{
-		
-		$GLOBALS['ilLog']->write(__METHOD__.': '.$a_component);
-		
+		$this->logger->debug('Handling event: '. $a_event. ' from component '. $a_component);
 		self::debEvents($a_component, $a_event, $a_params);
 		
 		$objId = $a_params['obj_id'];
@@ -58,54 +77,75 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 				{
 					case 'create':
 						
-						$this->handleCreateEvent($objId, $objType); break;
+						$this->handleCreateEvent($objId, $objType);
+						break;
 						
 					case 'update':
 						
-						$this->handleUpdateEvent($objId, $objType); break;
+						$this->handleUpdateEvent($objId, $objType);
+						break;
 						
 					case 'delete':
 						
-						$this->handleRemoveEvent($objId, $objType); break;
+						$this->handleRemoveEvent($objId, $objType);
+						break;
 					
 					case 'toTrash':
 						
-						$this->handleToTrashEvent($objId, $objType); break;
+						$this->handleToTrashEvent($objId, $objType);
+						break;
 						
 					case 'undelete':
 						
-						$this->handleRestoreEvent($objId, $objType); break;
+						$this->handleRestoreEvent($objId, $objType);
+						break;
 
 					case 'cut':
 
-						$this->handleUpdateEvent($objId, $objType); break;
+						$this->handleUpdateEvent($objId, $objType);
+						break;
 
 					case 'link':
 
-						$this->handleUpdateEvent($objId, $objType); break;
+						$this->handleUpdateEvent($objId, $objType);
+						break;
 				}
 			
 			case 'Services/Container':
 				
 				if( $a_event == 'saveSorting' )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 				if( $a_event == 'cut' )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 				if( $a_event == 'link' )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 
 			case 'Modules/Category':
 			
 				if( $a_event == 'update' )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
+
+
+			case 'Modules/Group':
+
+				if($a_event == 'update')
+				{
+					$this->handleUpdateEvent($objId, $objType);
+					break;
+				}
+
 				
 			case 'Services/FileSystemStorage':
 				
@@ -119,7 +159,8 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 				
 				if( in_array($a_event, $handledEvents) )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 
 			case 'Modules/HTMLLearningModule':
@@ -132,7 +173,8 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 				
 				if( in_array($a_event, $handledEvents) )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 				
 			case 'Services/MetaData':
@@ -156,7 +198,8 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 				
 				if( in_array($a_event, $handledEvents) )
 				{
-					$this->handleUpdateEvent($objId, $objType); break;
+					$this->handleUpdateEvent($objId, $objType);
+					break;
 				}
 		}
 		
@@ -164,8 +207,7 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 	}
 	
 	/**
-	 * der neue create event wird in jedem fall in der queue gespeichert.
-	 * 
+	 * Handle create event
 	 * @param integer $objId
 	 * @param string $objType
 	 */
@@ -177,8 +219,7 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 	}
 	
 	/**
-	 * der neue update event wird nur in der queue gespeichert,
-	 * wenn noch KEIN update oder create event in der queue steht.
+	 * Update event if no entry exists
 	 * 
 	 * @param integer $objId
 	 * @param string $objType
@@ -275,7 +316,13 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 			);
 		}
 	}
-		
+
+	/**
+	 * Debugging
+	 * @param $component
+	 * @param $event
+	 * @param $params
+	 */
 	private static function debEvents($component, $event, $params)
 	{
 		static $requestEvents = null;
@@ -300,6 +347,9 @@ class ilTrackObjectChangesPlugin extends ilEventHookPlugin
 		);
 	}
 
+	/**
+	 * Delete event tables
+	 */
 	public function afterUninstall()
 	{
 		global $ilDB;
