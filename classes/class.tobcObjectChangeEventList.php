@@ -93,7 +93,8 @@ class tobcObjectChangeEventList implements Iterator
 			ORDER BY	obj_id		ASC,
 						evt_date	ASC
 		";
-		
+
+
 		$resultSet = $ilDB->query($queryString);
 		
 		$objectChangeEventList = new self();

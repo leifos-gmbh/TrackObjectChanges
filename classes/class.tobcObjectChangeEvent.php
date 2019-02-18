@@ -12,13 +12,13 @@ class tobcObjectChangeEvent
 	/**
 	 * @var string[]
 	 */
-	private static $trackedObjectTypes = array('cat', 'grp', 'fold', 'htlm', 'file','sahs','webr');
+	private static $trackedObjectTypes = array('root','cat', 'grp', 'fold', 'htlm', 'file','sahs','webr');
 
 
 	/**
 	 * @var string[]
 	 */
-	private static $allowedContainerTypes = array('cat','grp','fold');
+	private static $allowedContainerTypes = array('root','cat','grp','fold');
 	
 	const EVENT_TYPE_CREATE  = 'CREATE';
 	const EVENT_TYPE_UPDATE  = 'UPDATE';
