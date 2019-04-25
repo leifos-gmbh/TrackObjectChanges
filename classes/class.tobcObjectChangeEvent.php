@@ -12,7 +12,7 @@ class tobcObjectChangeEvent
 	/**
 	 * @var string[]
 	 */
-	private static $trackedObjectTypes = array('root','cat', 'grp', 'fold', 'htlm', 'file','sahs','webr');
+	private static $trackedObjectTypes = array('root','cat', 'grp', 'fold', 'htlm', 'file','sahs','webr', 'lm', 'blog');
 
 
 	/**
